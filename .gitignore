@@ -6,4 +6,3 @@ build/
 .env
 *.log
 *.pdf
-docs/

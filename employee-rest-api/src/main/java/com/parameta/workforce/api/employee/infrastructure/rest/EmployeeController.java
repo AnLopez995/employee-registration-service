@@ -3,6 +3,10 @@ package com.parameta.workforce.api.employee.infrastructure.rest;
 import com.parameta.workforce.api.employee.application.RegisterEmployeeUseCase;
 import com.parameta.workforce.api.employee.application.RegistrationResult;
 import com.parameta.workforce.api.employee.domain.Employee;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,12 +22,16 @@ public class EmployeeController {
         this.registerEmployee = registerEmployee;
     }
 
-    /**
-     * Registrar un empleado se expone como metodo get porque tecnicamente fue el requerimiento solicitado,
-     * En sistemas productivos esto deberia ser un post, ya que get no es una operacion que deberia manipular recursos en el servidor
-     * al ser seguro e idempotente y la informacion personal como salario no deberian exponerse por url,
-     * ademas de que se guarda en logs de accceso, en el historial del navegador o cache.
-     */
+    @Operation(summary = "Registers an employee and returns age and tenure", description = "Exposed as GET because the technical test requires it. "
+            + "In production this would be POST: see docs/DECISIONES.md, entry 7.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Employee registered"),
+            @ApiResponse(responseCode = "400", description = "Invalid format or failed validation"),
+            @ApiResponse(responseCode = "409", description = "Document already registered"),
+            @ApiResponse(responseCode = "422", description = "Business rule violated"),
+            @ApiResponse(responseCode = "503", description = "Employee registry unreachable"),
+            @ApiResponse(responseCode = "504", description = "Employee registry timed out")
+    })
     @GetMapping
     public EmployeeResponse register(@Valid RegisterEmployeeRequest request) {
         Employee employee = EmployeeRestMapper.toDomain(request);
