@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://parameta.com/employees/v1"
+           targetNamespace="http://parameta.com/employees/v1"
+           elementFormDefault="qualified">
+
+    <xs:element name="registerEmployeeRequest">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="firstName"      type="tns:NonEmptyText"/>
+                <xs:element name="lastName"       type="tns:NonEmptyText"/>
+                <xs:element name="documentType"   type="tns:DocumentType"/>
+                <xs:element name="documentNumber" type="tns:NonEmptyText"/>
+                <xs:element name="birthDate"      type="xs:date"/>
+                <xs:element name="hireDate"       type="xs:date"/>
+                <xs:element name="position"       type="tns:NonEmptyText"/>
+                <xs:element name="salary"         type="tns:Salary"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="registerEmployeeResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="id"             type="xs:long"/>
+                <xs:element name="documentNumber" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:simpleType name="NonEmptyText">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DocumentType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="CC"/>
+            <xs:enumeration value="CE"/>
+            <xs:enumeration value="TI"/>
+            <xs:enumeration value="PA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="Salary">
+        <xs:restriction base="xs:decimal">
+            <xs:minExclusive value="0"/>
+            <xs:fractionDigits value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

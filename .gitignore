@@ -1,0 +1,8 @@
+target/
+build/
+.idea/
+*.iml
+.vscode/
+.env
+*.log
+*.pdf
