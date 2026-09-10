@@ -1,6 +1,8 @@
 package com.parameta.workforce.registry.config;
 
-import com.parameta.workforce.registry.employee.domain.EmployeeAlreadyExistsException;
+import com.parameta.workforce.registry.employee.domain.exception.EmployeeAlreadyExistsException;
+import com.parameta.workforce.registry.employee.domain.exception.InvalidEmployeeDataException;
+
 import java.util.Properties;
 import javax.xml.namespace.QName;
 import org.springframework.stereotype.Component;
@@ -23,7 +25,7 @@ public class SoapExceptionResolver extends SoapFaultMappingExceptionResolver {
         Properties mappings = new Properties();
         mappings.setProperty(EmployeeAlreadyExistsException.class.getName(),
                 "CLIENT,Employee is already registered");
-        mappings.setProperty(IllegalArgumentException.class.getName(),
+        mappings.setProperty(InvalidEmployeeDataException.class.getName(),
                 "CLIENT,Invalid employee data");
         setExceptionMappings(mappings);
 
@@ -41,7 +43,7 @@ public class SoapExceptionResolver extends SoapFaultMappingExceptionResolver {
         if (ex instanceof EmployeeAlreadyExistsException) {
             return "EMPLOYEE_ALREADY_EXISTS";
         }
-        if (ex instanceof IllegalArgumentException) {
+        if (ex instanceof InvalidEmployeeDataException) {
             return "INVALID_EMPLOYEE_DATA";
         }
         return "INTERNAL_ERROR";

@@ -1,6 +1,11 @@
 package com.parameta.workforce.api.employee.infrastructure.soap;
 
 import com.parameta.workforce.api.employee.domain.*;
+import com.parameta.workforce.api.employee.domain.exception.EmployeeAlreadyExistsException;
+import com.parameta.workforce.api.employee.domain.exception.InvalidEmployeeDataException;
+import com.parameta.workforce.api.employee.domain.exception.RegistryFailureException;
+import com.parameta.workforce.api.employee.domain.exception.RegistryTimeoutException;
+import com.parameta.workforce.api.employee.domain.exception.RegistryUnavailableException;
 import com.parameta.workforce.api.employee.infrastructure.soap.contract.RegisterEmployeeRequest;
 import com.parameta.workforce.api.employee.infrastructure.soap.contract.RegisterEmployeeResponse;
 import java.io.StringWriter;

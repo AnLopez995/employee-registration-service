@@ -1,8 +1,8 @@
 package com.parameta.workforce.registry.employee.infrastructure.persistence;
 
 import com.parameta.workforce.registry.employee.domain.Employee;
-import com.parameta.workforce.registry.employee.domain.EmployeeAlreadyExistsException;
 import com.parameta.workforce.registry.employee.domain.EmployeeRepository;
+import com.parameta.workforce.registry.employee.domain.exception.EmployeeAlreadyExistsException;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;

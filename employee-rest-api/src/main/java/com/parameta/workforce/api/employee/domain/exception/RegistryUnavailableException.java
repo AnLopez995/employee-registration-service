@@ -1,4 +1,4 @@
-package com.parameta.workforce.api.employee.domain;
+package com.parameta.workforce.api.employee.domain.exception;
 
 public class RegistryUnavailableException extends RegistryFailureException {
     public RegistryUnavailableException(String message, Throwable cause) {

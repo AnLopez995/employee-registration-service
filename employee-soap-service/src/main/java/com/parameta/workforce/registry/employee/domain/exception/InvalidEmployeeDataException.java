@@ -1,4 +1,4 @@
-package com.parameta.workforce.api.employee.domain;
+package com.parameta.workforce.registry.employee.domain.exception;
 
 public class InvalidEmployeeDataException extends RuntimeException {
     public InvalidEmployeeDataException(String message) {

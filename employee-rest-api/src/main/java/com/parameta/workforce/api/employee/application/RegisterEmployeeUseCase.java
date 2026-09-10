@@ -2,7 +2,8 @@ package com.parameta.workforce.api.employee.application;
 
 import com.parameta.workforce.api.employee.domain.Employee;
 import com.parameta.workforce.api.employee.domain.EmployeeRegistry;
-import com.parameta.workforce.api.employee.domain.UnderageEmployeeException;
+import com.parameta.workforce.api.employee.domain.exception.UnderageEmployeeException;
+
 import java.time.Clock;
 import java.time.LocalDate;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,7 @@
 package com.parameta.workforce.api.employee.infrastructure.rest;
 
-import com.parameta.workforce.api.employee.domain.*;
+import com.parameta.workforce.api.employee.domain.exception.*;
+
 import java.net.URI;
 import java.util.List;
 
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "com.parameta.workforce.api.employee")
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);
@@ -36,7 +37,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 ex.getMessage(), "underage-employee");
     }
 
-    @ExceptionHandler({ InvalidEmployeeDataException.class, IllegalArgumentException.class })
+    @ExceptionHandler({ InvalidEmployeeDataException.class })
     ProblemDetail handleInvalidData(RuntimeException ex) {
         return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Invalid employee data",
                 ex.getMessage(), "invalid-employee-data");
