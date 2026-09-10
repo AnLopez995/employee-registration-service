@@ -17,5 +17,33 @@ services:
       timeout: 3s
       retries: 20
 
+  employee-soap-service:
+    build:
+      context: .
+      dockerfile: employee-soap-service/Dockerfile
+    container_name: parameta-soap
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: parameta
+      DB_PASSWORD: parameta
+    ports:
+      - "8081:8081"
+
+  employee-rest-api:
+    build:
+      context: .
+      dockerfile: employee-rest-api/Dockerfile
+    container_name: parameta-rest
+    depends_on:
+      - employee-soap-service
+    environment:
+      SOAP_REGISTRY_URL: http://employee-soap-service:8081/ws
+    ports:
+      - "8080:8080"
+
 volumes:
   mysql-data:
