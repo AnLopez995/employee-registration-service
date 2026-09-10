@@ -1,0 +1,16 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:emp="http://parameta.com/employees/v1">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <emp:registerEmployeeRequest>
+            <emp:firstName>Andres Felipe</emp:firstName>
+            <emp:lastName>Lopez Gomez</emp:lastName>
+            <emp:documentType>CC</emp:documentType>
+            <emp:documentNumber>1020304050</emp:documentNumber>
+            <emp:birthDate>1995-03-15</emp:birthDate>
+            <emp:hireDate>2020-08-01</emp:hireDate>
+            <emp:position>Backend Developer</emp:position>
+            <emp:salary>8500000.00</emp:salary>
+        </emp:registerEmployeeRequest>
+    </soapenv:Body>
+</soapenv:Envelope>
