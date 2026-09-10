@@ -15,6 +15,7 @@ import com.parameta.workforce.api.employee.domain.exception.UnderageEmployeeExce
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -47,7 +48,7 @@ class EmployeeControllerTest {
 
         private Employee sampleEmployee() {
                 return new Employee("Andres", "Lopez", DocumentType.CC, "1020304050",
-                                LocalDate.of(1995, 3, 15), LocalDate.of(2020, 8, 1),
+                                LocalDate.of(1995, Month.MARCH, 15), LocalDate.of(2020, Month.AUGUST, 1),
                                 "Backend Developer", new BigDecimal("8500000.00"));
         }
 
@@ -93,7 +94,7 @@ class EmployeeControllerTest {
                                 .thenThrow(new UnderageEmployeeException("1020304050"));
 
                 mockMvc.perform(get("/api/v1/employees").params(validParams()))
-                                .andExpect(status().isUnprocessableEntity());
+                                .andExpect(status().isUnprocessableContent());
         }
 
         @Test

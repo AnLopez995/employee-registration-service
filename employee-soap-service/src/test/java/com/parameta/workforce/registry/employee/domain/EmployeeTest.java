@@ -6,12 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.parameta.workforce.registry.employee.domain.exception.InvalidEmployeeDataException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.Test;
 
 class EmployeeTest {
 
-    private static final LocalDate BIRTH = LocalDate.of(1995, 3, 15);
-    private static final LocalDate HIRE = LocalDate.of(2020, 8, 1);
+    private static final LocalDate BIRTH = LocalDate.of(1995, Month.MARCH, 15);
+    private static final LocalDate HIRE = LocalDate.of(2020, Month.AUGUST, 1);
 
     private Employee employee(String firstName, BigDecimal salary, LocalDate birth, LocalDate hire) {
         return new Employee(firstName, "Lopez", DocumentType.CC, "1020304050",

@@ -1,6 +1,7 @@
 package com.parameta.workforce.api.employee.infrastructure.soap;
 
-import com.parameta.workforce.api.employee.domain.*;
+import com.parameta.workforce.api.employee.domain.Employee;
+import com.parameta.workforce.api.employee.domain.EmployeeRegistry;
 import com.parameta.workforce.api.employee.domain.exception.EmployeeAlreadyExistsException;
 import com.parameta.workforce.api.employee.domain.exception.InvalidEmployeeDataException;
 import com.parameta.workforce.api.employee.domain.exception.RegistryFailureException;
@@ -14,13 +15,19 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.Optional;
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import javax.xml.transform.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import org.springframework.stereotype.Component;
 import org.springframework.ws.client.WebServiceClientException;
 import org.springframework.ws.client.WebServiceIOException;
 import org.springframework.ws.client.core.WebServiceTemplate;
+import org.springframework.ws.soap.SoapFault;
 import org.springframework.ws.soap.SoapFaultDetail;
 import org.springframework.ws.soap.SoapFaultDetailElement;
 import org.springframework.ws.soap.client.SoapFaultClientException;
@@ -29,6 +36,7 @@ import org.springframework.ws.soap.client.SoapFaultClientException;
 public class SoapEmployeeRegistry implements EmployeeRegistry {
 
     private static final QName ERROR_CODE = new QName("http://parameta.com/employees/v1", "errorCode");
+    private static final String REJECTED = "Employee registry rejected the request";
 
     private final WebServiceTemplate webServiceTemplate;
 
@@ -40,9 +48,12 @@ public class SoapEmployeeRegistry implements EmployeeRegistry {
     public long register(Employee employee) {
         try {
             RegisterEmployeeRequest request = EmployeeSoapMapper.toRequest(employee);
-            RegisterEmployeeResponse response = (RegisterEmployeeResponse) webServiceTemplate
-                    .marshalSendAndReceive(request);
-            return response.getId();
+            Object payload = webServiceTemplate.marshalSendAndReceive(request);
+
+            if (payload instanceof RegisterEmployeeResponse response) {
+                return response.getId();
+            }
+            throw new RegistryFailureException("Employee registry returned an unexpected payload");
 
         } catch (SoapFaultClientException ex) {
             throw translateFault(ex, employee);
@@ -59,10 +70,8 @@ public class SoapEmployeeRegistry implements EmployeeRegistry {
         return switch (errorCode(ex).orElse("INTERNAL_ERROR")) {
             case "EMPLOYEE_ALREADY_EXISTS" -> new EmployeeAlreadyExistsException(
                     employee.documentType(), employee.documentNumber());
-            case "INVALID_EMPLOYEE_DATA" -> new InvalidEmployeeDataException(
-                    ex.getSoapFault().getFaultStringOrReason());
-            default -> new RegistryFailureException(
-                    "Employee registry rejected the request", ex);
+            case "INVALID_EMPLOYEE_DATA" -> new InvalidEmployeeDataException(faultReason(ex));
+            default -> new RegistryFailureException(REJECTED, ex);
         };
     }
 
@@ -77,8 +86,17 @@ public class SoapEmployeeRegistry implements EmployeeRegistry {
         return new RegistryFailureException("Employee registry communication failed", ex);
     }
 
+    private String faultReason(SoapFaultClientException ex) {
+        SoapFault fault = ex.getSoapFault();
+        return fault == null ? REJECTED : fault.getFaultStringOrReason();
+    }
+
     private Optional<String> errorCode(SoapFaultClientException ex) {
-        SoapFaultDetail detail = ex.getSoapFault().getFaultDetail();
+        SoapFault fault = ex.getSoapFault();
+        if (fault == null) {
+            return Optional.empty();
+        }
+        SoapFaultDetail detail = fault.getFaultDetail();
         if (detail == null) {
             return Optional.empty();
         }
@@ -92,14 +110,28 @@ public class SoapEmployeeRegistry implements EmployeeRegistry {
         return Optional.empty();
     }
 
+    /**
+     * Extracts the text content of a fault detail element.
+     *
+     * <p>External entity resolution is disabled: the payload comes from a remote
+     * service, and a crafted DOCTYPE could otherwise read local files or reach
+     * internal hosts (XXE).
+     */
     private String textOf(Source source) {
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            TransformerFactory factory = TransformerFactory.newInstance();
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+            Transformer transformer = factory.newTransformer();
             transformer.setOutputProperty(OutputKeys.METHOD, "text");
+
             StringWriter writer = new StringWriter();
             transformer.transform(source, new StreamResult(writer));
             return writer.toString().trim();
-        } catch (TransformerException ex) {
+
+        } catch (TransformerException | IllegalArgumentException ex) {
             return "";
         }
     }

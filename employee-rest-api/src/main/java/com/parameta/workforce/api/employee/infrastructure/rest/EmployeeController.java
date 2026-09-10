@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ProblemDetail;
@@ -29,9 +28,8 @@ public class EmployeeController {
 
     @Operation(summary = "Registers an employee and returns age and tenure", description = "Exposed as GET because the technical test requires it. "
             + "In production this would be POST: see docs/DECISIONES.md, entry 7.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Employee registered"),
-            @ApiResponse(responseCode = "400", description = "Invalid format or failed validation", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class), examples = @ExampleObject(value = """
+    @ApiResponse(responseCode = "200", description = "Employee registered")
+@ApiResponse(responseCode = "400", description = "Invalid format or failed validation", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class), examples = @ExampleObject(value = """
                     {
                       "type": "https://parameta.com/problems/validation-failed",
                       "title": "Validation failed",
@@ -45,13 +43,12 @@ public class EmployeeController {
                           "rejectedValue": "15-03-1995"
                         }
                       ]
-                    }"""))),
-            @ApiResponse(responseCode = "409", description = "Document already registered", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "422", description = "Business rule violated (underage, inconsistent dates)", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "502", description = "Employee registry failed", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "503", description = "Employee registry unreachable", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class))),
-            @ApiResponse(responseCode = "504", description = "Employee registry timed out", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
-    })
+                    }""")))
+@ApiResponse(responseCode = "409", description = "Document already registered", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+@ApiResponse(responseCode = "422", description = "Business rule violated (underage, inconsistent dates)", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+@ApiResponse(responseCode = "502", description = "Employee registry failed", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+@ApiResponse(responseCode = "503", description = "Employee registry unreachable", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
+@ApiResponse(responseCode = "504", description = "Employee registry timed out", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = ProblemDetail.class)))
     @GetMapping
     public EmployeeResponse register(@Valid RegisterEmployeeRequest request) {
         Employee employee = EmployeeRestMapper.toDomain(request);

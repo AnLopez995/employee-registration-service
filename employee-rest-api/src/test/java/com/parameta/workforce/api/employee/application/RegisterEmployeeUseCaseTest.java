@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +32,7 @@ class RegisterEmployeeUseCaseTest {
 
     private Employee employeeBornOn(LocalDate birthDate) {
         return new Employee("Andres", "Lopez", DocumentType.CC, "1020304050",
-                birthDate, LocalDate.of(2020, 8, 1), "Backend Developer",
+                birthDate, LocalDate.of(2020, Month.AUGUST, 1), "Backend Developer",
                 new BigDecimal("8500000.00"));
     }
 
@@ -40,7 +41,7 @@ class RegisterEmployeeUseCaseTest {
         when(employeeRegistry.register(any())).thenReturn(42L);
         RegisterEmployeeUseCase useCase = new RegisterEmployeeUseCase(employeeRegistry, NOON);
 
-        RegistrationResult result = useCase.register(employeeBornOn(LocalDate.of(1995, 3, 15)));
+        RegistrationResult result = useCase.register(employeeBornOn(LocalDate.of(1995, Month.MARCH, 15)));
 
         assertEquals(42L, result.id());
         assertEquals(new ElapsedTime(31, 5, 26), result.age());
@@ -50,7 +51,7 @@ class RegisterEmployeeUseCaseTest {
     @Test
     void rejectsAMinorWithoutCallingTheRegistry() {
         RegisterEmployeeUseCase useCase = new RegisterEmployeeUseCase(employeeRegistry, NOON);
-        Employee minor = employeeBornOn(LocalDate.of(2010, 1, 1));
+        Employee minor = employeeBornOn(LocalDate.of(2010, Month.JANUARY, 1));
 
         assertThrows(UnderageEmployeeException.class, () -> useCase.register(minor));
 
@@ -63,7 +64,7 @@ class RegisterEmployeeUseCaseTest {
         Clock lateNight = Clock.fixed(Instant.parse("2026-09-11T02:00:00Z"), BOGOTA);
         RegisterEmployeeUseCase useCase = new RegisterEmployeeUseCase(employeeRegistry, lateNight);
 
-        Employee turnsEighteenOnSeptember11 = employeeBornOn(LocalDate.of(2008, 9, 11));
+        Employee turnsEighteenOnSeptember11 = employeeBornOn(LocalDate.of(2008, Month.SEPTEMBER, 11));
 
         assertThrows(UnderageEmployeeException.class,
                 () -> useCase.register(turnsEighteenOnSeptember11));

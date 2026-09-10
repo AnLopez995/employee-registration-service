@@ -10,6 +10,7 @@ import com.parameta.workforce.registry.employee.domain.Employee;
 import com.parameta.workforce.registry.employee.domain.exception.EmployeeAlreadyExistsException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -26,7 +27,7 @@ class JpaEmployeeRepositoryTest {
 
     private Employee employee(DocumentType documentType, String documentNumber) {
         return new Employee("Andres", "Lopez", documentType, documentNumber,
-                LocalDate.of(1995, 3, 15), LocalDate.of(2020, 8, 1),
+                LocalDate.of(1995, Month.MARCH, 15), LocalDate.of(2020, Month.AUGUST, 1),
                 "Backend Developer", new BigDecimal("8500000.00"));
     }
 

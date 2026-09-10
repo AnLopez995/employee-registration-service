@@ -8,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
@@ -33,13 +34,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UnderageEmployeeException.class)
     ProblemDetail handleUnderage(UnderageEmployeeException ex) {
-        return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Employee is not of legal age",
+        return problem(HttpStatus.UNPROCESSABLE_CONTENT, "Employee is not of legal age",
                 ex.getMessage(), "underage-employee");
     }
 
     @ExceptionHandler({ InvalidEmployeeDataException.class })
     ProblemDetail handleInvalidData(RuntimeException ex) {
-        return problem(HttpStatus.UNPROCESSABLE_ENTITY, "Invalid employee data",
+        return problem(HttpStatus.UNPROCESSABLE_CONTENT, "Invalid employee data",
                 ex.getMessage(), "invalid-employee-data");
     }
 
@@ -79,7 +80,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+    protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
             HttpHeaders headers,
             HttpStatusCode status,

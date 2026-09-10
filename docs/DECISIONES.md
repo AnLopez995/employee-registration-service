@@ -179,8 +179,7 @@ Con enlace por setters, Spring registra la conversión fallida como error de cam
 
 | Decisión actual | Correcto en producción |
 |---|---|
-| `spring.jpa.hibernate.ddl-auto=update` | Flyway o Liquibase: versiona, revierte y no deja columnas huérfanas |
-| H2 en modo MySQL para tests | Testcontainers contra MySQL 8, para no arrastrar diferencias de dialecto |
+| `spring.jpa.hibernate.ddl-auto=update` | Flyway o Liquibase: versiona, revierte y no deja columnas huérfanas 
 | Sin autenticación | El `GET` expone datos personales sin control de acceso |
 | Sin circuit breaker | Hay timeouts explícitos; Resilience4j sería el siguiente paso |
 | Credenciales en `application.properties` | Gestor de secretos; hoy se leen de variables de entorno con valor por defecto |
