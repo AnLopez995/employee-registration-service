@@ -23,6 +23,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.oxm.XmlMappingException;
 import org.springframework.stereotype.Component;
 import org.springframework.ws.client.WebServiceClientException;
@@ -35,6 +37,8 @@ import org.springframework.ws.soap.client.SoapFaultClientException;
 
 @Component
 public class SoapEmployeeRegistry implements EmployeeRegistry {
+
+    private static final Logger log = LoggerFactory.getLogger(SoapEmployeeRegistry.class);
 
     private static final QName ERROR_CODE = new QName("http://parameta.com/employees/v1", "errorCode");
     private static final String REJECTED = "Employee registry rejected the request";
@@ -109,13 +113,6 @@ public class SoapEmployeeRegistry implements EmployeeRegistry {
         return Optional.empty();
     }
 
-    /**
-     * Extracts the text content of a fault detail element.
-     *
-     * <p>External entity resolution is disabled: the payload comes from a remote
-     * service, and a crafted DOCTYPE could otherwise read local files or reach
-     * internal hosts (XXE).
-     */
     private String textOf(Source source) {
         try {
             TransformerFactory factory = TransformerFactory.newInstance();
@@ -131,6 +128,7 @@ public class SoapEmployeeRegistry implements EmployeeRegistry {
             return writer.toString().trim();
 
         } catch (TransformerException | IllegalArgumentException ex) {
+            log.warn("Could not read the fault detail text; the fault will be handled as a generic registry failure", ex);
             return "";
         }
     }
