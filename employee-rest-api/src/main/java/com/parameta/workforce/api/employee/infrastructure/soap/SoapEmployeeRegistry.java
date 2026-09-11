@@ -23,6 +23,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
+import org.springframework.oxm.XmlMappingException;
 import org.springframework.stereotype.Component;
 import org.springframework.ws.client.WebServiceClientException;
 import org.springframework.ws.client.WebServiceIOException;
@@ -63,14 +64,21 @@ public class SoapEmployeeRegistry implements EmployeeRegistry {
 
         } catch (WebServiceClientException ex) {
             throw new RegistryFailureException("Employee registry call failed", ex);
+
+        } catch (XmlMappingException ex) {
+            throw new RegistryFailureException("Employee registry payload could not be mapped", ex);
         }
     }
 
     private RuntimeException translateFault(SoapFaultClientException ex, Employee employee) {
-        return switch (errorCode(ex).orElse("INTERNAL_ERROR")) {
+        SoapFault fault = ex.getSoapFault();
+        if (fault == null) {
+            return new RegistryFailureException(REJECTED, ex);
+        }
+        return switch (errorCode(fault).orElse("INTERNAL_ERROR")) {
             case "EMPLOYEE_ALREADY_EXISTS" -> new EmployeeAlreadyExistsException(
                     employee.documentType(), employee.documentNumber());
-            case "INVALID_EMPLOYEE_DATA" -> new InvalidEmployeeDataException(faultReason(ex));
+            case "INVALID_EMPLOYEE_DATA" -> new InvalidEmployeeDataException(fault.getFaultStringOrReason());
             default -> new RegistryFailureException(REJECTED, ex);
         };
     }
@@ -86,16 +94,7 @@ public class SoapEmployeeRegistry implements EmployeeRegistry {
         return new RegistryFailureException("Employee registry communication failed", ex);
     }
 
-    private String faultReason(SoapFaultClientException ex) {
-        SoapFault fault = ex.getSoapFault();
-        return fault == null ? REJECTED : fault.getFaultStringOrReason();
-    }
-
-    private Optional<String> errorCode(SoapFaultClientException ex) {
-        SoapFault fault = ex.getSoapFault();
-        if (fault == null) {
-            return Optional.empty();
-        }
+    private Optional<String> errorCode(SoapFault fault) {
         SoapFaultDetail detail = fault.getFaultDetail();
         if (detail == null) {
             return Optional.empty();

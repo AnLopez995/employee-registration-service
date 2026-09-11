@@ -79,6 +79,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return problem;
     }
 
+    /*
+     * java:S2638 is a false positive here. The override keeps the parent contract
+     * exactly: both packages are @NullMarked and both return types are @Nullable
+     * (verified in the compiled bytecode of Spring and of this class). The rule does
+     * not read the type-use annotation on the parent's return, and dropping @Nullable
+     * to satisfy it would trigger java:S2637 instead.
+     */
+    @SuppressWarnings("java:S2638")
     @Override
     protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
@@ -102,7 +110,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     private String messageFor(FieldError error) {
         if (!"typeMismatch".equals(error.getCode())) {
-            return error.getDefaultMessage();
+            String message = error.getDefaultMessage();
+            return message != null ? message : "is invalid";
         }
         String[] codes = error.getCodes();
         if (codes != null) {
