@@ -105,4 +105,28 @@ class EmployeeControllerTest {
                 mockMvc.perform(get("/api/v1/employees").params(validParams()))
                                 .andExpect(status().isServiceUnavailable());
         }
+
+        @Test
+        void returnsBadRequestWhenTheSalaryHasTooManyIntegerDigits() throws Exception {
+                MultiValueMap<String, String> params = validParams();
+                params.set("salary", "1".repeat(14) + ".00");
+
+                mockMvc.perform(get("/api/v1/employees").params(params))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors[0].field").value("salary"))
+                                .andExpect(jsonPath("$.errors[0].message")
+                                                .value("must not have more than 13 integer digits and 2 decimal places"));
+        }
+
+        @Test
+        void returnsBadRequestWhenTheSalaryHasThreeDecimals() throws Exception {
+                MultiValueMap<String, String> params = validParams();
+                params.set("salary", "1000000.000");
+
+                mockMvc.perform(get("/api/v1/employees").params(params))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.errors[0].field").value("salary"))
+                                .andExpect(jsonPath("$.errors[0].message")
+                                                .value("must not have more than 13 integer digits and 2 decimal places"));
+        }
 }

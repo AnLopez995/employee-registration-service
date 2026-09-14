@@ -84,4 +84,46 @@ class EmployeeEndpointTest {
 
         verify(registerEmployee, never()).register(any());
     }
+
+    @Test
+    void returnsAClientFaultWhenTheFirstNameExceedsTheSchemaLimit() {
+        String invalidFirstName = VALID_REQUEST.replace("Andres", "A".repeat(101));
+
+        client.sendRequest(withPayload(new StringSource(invalidFirstName)))
+                .andExpect(clientOrSenderFault());
+
+        verify(registerEmployee, never()).register(any());
+    }
+
+    @Test
+    void returnsAClientFaultWhenTheDocumentNumberExceedsTheSchemaLimit() {
+        String invalidDocumentNumber = VALID_REQUEST.replace("1020304050",
+                "1".repeat(21));
+
+        client.sendRequest(withPayload(new StringSource(invalidDocumentNumber)))
+                .andExpect(clientOrSenderFault());
+
+        verify(registerEmployee, never()).register(any());
+    }
+
+    @Test
+    void returnsAClientFaultWhenTheSalaryIsZero() {
+        String invalidSalary = VALID_REQUEST.replace("8500000.00", "0.00");
+
+        client.sendRequest(withPayload(new StringSource(invalidSalary)))
+                .andExpect(clientOrSenderFault());
+
+        verify(registerEmployee, never()).register(any());
+    }
+
+    @Test
+    void returnsAClientFaultWhenTheSalaryExceedsTheSchemaLimit() {
+        String invalidSalary = VALID_REQUEST.replace("8500000.00", "1".repeat(14) + ".00");
+
+        client.sendRequest(withPayload(new StringSource(invalidSalary)))
+                .andExpect(clientOrSenderFault());
+
+        verify(registerEmployee, never()).register(any());
+    }
+
 }

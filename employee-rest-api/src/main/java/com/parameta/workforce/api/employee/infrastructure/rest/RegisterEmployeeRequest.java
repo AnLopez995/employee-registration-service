@@ -1,6 +1,8 @@
 package com.parameta.workforce.api.employee.infrastructure.rest;
 
 import com.parameta.workforce.api.employee.domain.DocumentType;
+
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -47,5 +49,6 @@ public class RegisterEmployeeRequest {
 
         @NotNull(message = "is required")
         @Positive(message = "must be greater than zero")
+        @Digits(integer = 13, fraction = 2, message = "must not have more than 13 integer digits and 2 decimal places")
         BigDecimal salary;
 }

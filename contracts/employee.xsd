@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns:tns="http://parameta.com/employees/v1"
-           targetNamespace="http://parameta.com/employees/v1"
-           elementFormDefault="qualified">
+    xmlns:tns="http://parameta.com/employees/v1" targetNamespace="http://parameta.com/employees/v1" elementFormDefault="qualified">
 
     <xs:element name="registerEmployeeRequest">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="firstName"      type="tns:NonEmptyText"/>
-                <xs:element name="lastName"       type="tns:NonEmptyText"/>
-                <xs:element name="documentType"   type="tns:DocumentType"/>
-                <xs:element name="documentNumber" type="tns:NonEmptyText"/>
-                <xs:element name="birthDate"      type="xs:date"/>
-                <xs:element name="hireDate"       type="xs:date"/>
-                <xs:element name="position"       type="tns:NonEmptyText"/>
-                <xs:element name="salary"         type="tns:Salary"/>
+                <xs:element name="firstName" type="tns:NonEmptyText"/>
+                <xs:element name="lastName" type="tns:NonEmptyText"/>
+                <xs:element name="documentType" type="tns:DocumentType"/>
+                <xs:element name="documentNumber" type="tns:DocumentNumber"/>
+                <xs:element name="birthDate" type="xs:date"/>
+                <xs:element name="hireDate" type="xs:date"/>
+                <xs:element name="position" type="tns:NonEmptyText"/>
+                <xs:element name="salary" type="tns:Salary"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -22,7 +20,7 @@
     <xs:element name="registerEmployeeResponse">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="id"             type="xs:long"/>
+                <xs:element name="id" type="xs:long"/>
                 <xs:element name="documentNumber" type="xs:string"/>
             </xs:sequence>
         </xs:complexType>
@@ -32,6 +30,13 @@
         <xs:restriction base="xs:string">
             <xs:minLength value="1"/>
             <xs:maxLength value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="DocumentNumber">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="20"/>
         </xs:restriction>
     </xs:simpleType>
 
@@ -47,6 +52,7 @@
     <xs:simpleType name="Salary">
         <xs:restriction base="xs:decimal">
             <xs:minExclusive value="0"/>
+            <xs:maxInclusive value="9999999999999.99"/>
             <xs:fractionDigits value="2"/>
         </xs:restriction>
     </xs:simpleType>

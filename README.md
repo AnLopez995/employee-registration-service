@@ -113,7 +113,7 @@ nombres del enunciado:
 | Fecha de Nacimiento | `birthDate` | Date | `AAAA-MM-DD` (ISO-8601) |
 | Fecha de Vinculación | `hireDate` | Date | `AAAA-MM-DD` (ISO-8601) |
 | Cargo | `position` | String | máx. 100 caracteres |
-| Salario | `salary` | **BigDecimal** | mayor que cero, 2 decimales |
+| Salario | `salary` | **BigDecimal** | mayor que cero, máx. 13 enteros y 2 decimales |
 | Edad actual | `age` | Objeto | `{ years, months, days }` |
 | Tiempo de Vinculación | `tenure` | Objeto | `{ years, months, days }` |
 
@@ -138,12 +138,16 @@ Las que no pide y se agregaron:
 - `birthDate` no puede ser futura
 - `hireDate` no puede ser futura
 - `hireDate` no puede ser anterior a `birthDate`
-- `salary` debe ser mayor que cero
+- `salary` debe ser mayor que cero, con máximo 13 dígitos enteros y 2 decimales
+  (lo que admite la columna `DECIMAL(15,2)`)
 - `documentType` debe pertenecer al catálogo
 - `(documentType, documentNumber)` es único: no se registra dos veces al mismo empleado
 
 La validación ocurre en **ambos** servicios. No es redundancia: el servicio SOAP
-está expuesto en la red y no puede confiar en su llamador.
+está expuesto en la red y no puede confiar en su llamador. Por eso valida cada
+petición contra `contracts/employee.xsd` antes de que llegue al endpoint, y los
+límites del contrato coinciden con los de las columnas de la base de datos.
+Ver `docs/DECISIONES.md`, entradas 17 a 19.
 
 ---
 
