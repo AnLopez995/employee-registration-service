@@ -179,7 +179,51 @@ Con enlace por setters, Spring registra la conversión fallida como error de cam
 
 | Decisión actual | Correcto en producción |
 |---|---|
-| `spring.jpa.hibernate.ddl-auto=update` | Flyway o Liquibase: versiona, revierte y no deja columnas huérfanas 
+| `spring.jpa.hibernate.ddl-auto=update` | Flyway o Liquibase: versiona, revierte y no deja columnas huérfanas. `update` no modifica columnas existentes: cambiar la `precision` en la entidad no altera la tabla de una base que ya tiene datos |
 | Sin autenticación | El `GET` expone datos personales sin control de acceso |
 | Sin circuit breaker | Hay timeouts explícitos; Resilience4j sería el siguiente paso |
 | Credenciales en `application.properties` | Gestor de secretos; hoy se leen de variables de entorno con valor por defecto |
+| Ningún test recorre XSD → base de datos | Test de integración con el valor máximo del contrato; contra el esquema real, Testcontainers + Flyway |
+
+---
+
+## 17. El servicio SOAP valida cada petición contra el XSD
+
+`PayloadValidatingInterceptor` valida el payload antes de que llegue a `EmployeeEndpoint`. Si no cumple el esquema, responde un fault `CLIENT` y el caso de uso no se ejecuta.
+
+**Por qué:** JAXB no aplica las facetas del esquema (`maxLength`, `minExclusive`, `fractionDigits`) al convertir el XML en objetos; solo las fechas se frenaban, y eso lo hacía `LocalDateConverter`. Las restricciones del contrato eran documentación: un `documentNumber` de 30 caracteres atravesaba el servicio hasta la base de datos. El servicio está expuesto en la red y no puede confiar en su llamador.
+
+**Las respuestas no se validan:** las produce nuestro propio código a partir de las mismas clases generadas del XSD. Una respuesta fuera de contrato es un bug nuestro y se atrapa en los tests, no cobrándole el costo a cada petición. Además, en Spring-WS un error de validación de respuesta solo se registra en el log: no bloquea el envío.
+
+**Consecuencia aceptada:** los faults de validación son los de Spring-WS (`Validation error`) y no llevan `errorCode`, así que el REST los traduce a `502`. Es correcto: el REST valida los mismos límites antes de llamar (`@Size`, `@Digits`), de modo que un fault de validación que le llegue indica que los dos lados del contrato se desalinearon, no un error del cliente.
+
+---
+
+## 18. Los límites del contrato coinciden con las columnas
+
+| Campo | XSD | Columna | REST |
+|---|---|---|---|
+| `documentNumber` | `maxLength` 20 (antes 100) | `VARCHAR(20)` | `@Size(max = 20)` |
+| `salary` | `maxInclusive` `9999999999999.99` | `DECIMAL(15,2)` | `@Digits(integer = 13, fraction = 2)` |
+
+**Por qué:** el contrato prometía más de lo que la base aceptaba. `documentNumber` tiene su propio tipo (`DocumentNumber`) en lugar de reducir `NonEmptyText`, que también usan `firstName`, `lastName` y `position`, cuyas columnas sí son de 100.
+
+**Descartado:** `totalDigits="15"` para el salario. `totalDigits` cuenta los dígitos del valor, y en un decimal los ceros finales no son significativos: `11111111111111.00` vale lo mismo que `11111111111111`, que tiene 14 dígitos. Aceptaba hasta 15 enteros, y la columna reserva siempre 2 posiciones decimales, así que admite 13. Lo que la columna limita es un rango, y eso se expresa con `maxInclusive`.
+
+**Trampa conocida:** `fractionDigits="2"` y `@Digits(fraction = 2)` son máximos, no cantidades exactas. `8500000` es un salario válido; nadie le agrega decimales en el REST, y solo la columna lo almacena como `8500000.00`.
+
+**Versionado:** es un parche. Ningún consumidor que funcionaba deja de funcionar: lo que ahora se rechaza antes también fallaba, solo que en la base de datos. Lo que cambia es el error que recibe, y eso debe quedar en las notas de la versión.
+
+**Consecuencia aceptada:** cada límite vive en tres lugares y ningún test verifica que coincidan. Ver la deuda técnica, entrada 16.
+
+---
+
+## 19. Solo la restricción única significa "ya registrado"
+
+El repositorio traduce a `EmployeeAlreadyExistsException` únicamente la violación de `uk_employee_document`. Cualquier otra violación de integridad se relanza, `SoapExceptionResolver` la responde como fault `SERVER` con `INTERNAL_ERROR`, y el REST devuelve `502`.
+
+**Por qué:** `DataIntegrityViolationException` no significa duplicado, significa que la base rechazó algo: un duplicado, un valor demasiado largo, un número fuera de rango o un nulo. Antes toda la familia se reportaba como "ya existe", y un documento de 21 caracteres que nunca había sido registrado recibía `EMPLOYEE_ALREADY_EXISTS`.
+
+**Por qué error de servidor y no de cliente:** el esquema ya valida las entradas. Si un valor inválido llega hasta la base, la falla es de nuestro sistema, que no lo frenó.
+
+**Pendiente conocido:** el nombre de la restricción se compara con `contains` y sin distinguir mayúsculas, porque cada motor lo reporta con un formato distinto. Está verificado en H2, que es donde corren los tests; en MySQL falta confirmarlo registrando dos veces el mismo documento contra el stack de Docker.
