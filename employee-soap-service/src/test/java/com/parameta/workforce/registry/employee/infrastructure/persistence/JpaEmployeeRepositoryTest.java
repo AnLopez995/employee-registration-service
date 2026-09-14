@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -54,6 +55,14 @@ class JpaEmployeeRepositoryTest {
         long second = repository.save(employee(DocumentType.TI, "1020304050"));
 
         assertNotEquals(first, second);
+    }
+
+    @Test
+    void doesNotReportAnIntegrityViolationThatIsNotADuplicateAsAlreadyRegistered() {
+        Employee documentLongerThanTheColumn = employee(DocumentType.CC, "1".repeat(21));
+
+        assertThrows(DataIntegrityViolationException.class,
+                () -> repository.save(documentLongerThanTheColumn));
     }
 
     @Test
