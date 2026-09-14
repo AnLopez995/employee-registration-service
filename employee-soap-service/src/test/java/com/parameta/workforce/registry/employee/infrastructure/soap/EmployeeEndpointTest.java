@@ -95,14 +95,14 @@ class EmployeeEndpointTest {
         verify(registerEmployee, never()).register(any());
     }
 
-    // @Test
-    // void returnsAClientFaultWhenTheDocumentNumberExceedsTheSchemaLimit() {
-    // String invalidDocumentNumber = VALID_REQUEST.replace("1020304050",
-    // "1".repeat(21));
+    @Test
+    void returnsAClientFaultWhenTheDocumentNumberExceedsTheSchemaLimit() {
+        String invalidDocumentNumber = VALID_REQUEST.replace("1020304050",
+                "1".repeat(21));
 
-    // client.sendRequest(withPayload(new StringSource(invalidDocumentNumber)))
-    // .andExpect(clientOrSenderFault());
+        client.sendRequest(withPayload(new StringSource(invalidDocumentNumber)))
+                .andExpect(clientOrSenderFault());
 
-    // verify(registerEmployee, never()).register(any());
-    // }
+        verify(registerEmployee, never()).register(any());
+    }
 }
