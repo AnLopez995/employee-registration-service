@@ -52,6 +52,7 @@
     <xs:simpleType name="Salary">
         <xs:restriction base="xs:decimal">
             <xs:minExclusive value="0"/>
+            <xs:maxInclusive value="9999999999999.99"/>
             <xs:fractionDigits value="2"/>
         </xs:restriction>
     </xs:simpleType>
